@@ -3,8 +3,8 @@
 #| Please complete the missing rules below  
 <SOL> :: = { <NumList> }
         |  { scalar-mult <num> <SOL> }
-        |  { intersect <SOL> <SOL>} easy
-        |  { union  <SOL> <SOL> } easy
+        |  { intersect <-- fill in -->}
+        |  { union <-- fill in --> } 
         |  <id>
         |  { with {<id> <SOL> } <SOL> } ;; this should be a syntactic sugar
         |  { fun { <id> <id> } <SOL> } ;; a function must have exactly two formal parameters
@@ -25,9 +25,9 @@
 (define-type SOL
   ;; Please complete the missing parts -- you are NOT allowed to use additional variants (constructors)
     [Set  SET]
-    [Smult Number SOL] ;: BY description : Number is the Scaler , SOL is the set (SET will not fit as by examples we can Smult NUMBER and UNION/INTERSECTION )
-    [Inter SOL SOL] ;; Essy ,again we need to think if the intersection works on two sets that are composed of other sets with UNION/INTERSECTION . "SOL SOL" is the right choise.
-    [Union SOL SOL] ;; Same Idsea as before.
+    [Smult <-- fill in -->]
+    [Inter <-- fill in -->]
+    [Union <-- fill in -->]
     [Id    Symbol]
 ;;    [With  Symbol SOL SOL] -- not to be used, syntactic sugar for ...
     [Fun   Symbol Symbol SOL]
