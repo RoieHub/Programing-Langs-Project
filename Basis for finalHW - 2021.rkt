@@ -50,7 +50,7 @@
   (test (ismember? 1 '(3 4 5 1 3 4)))
   (test (ismember? 1 '(1)))
 
-  ;; This function is very easy , I remeber it 
+  ;; This function recive a SET and returns a subset of the input , where only the most right instananse of the member stays , others removed ,easy to solve I remeber this function well. 
   (: remove-duplicates : SET  -> SET)
   (define (remove-duplicates l)
     (cond [(or (null? l) (null? (rest l))) l]
@@ -58,11 +58,13 @@
           [else (cons (first l) (remove-duplicates (rest l)))]))
 
 ;;Given tests
+
 (test (remove-duplicates '(3 4 5)) => '(3 4 5))
 (test (remove-duplicates '( 3 2 3 5 6)) => '(2 3 5 6))
 (test (remove-duplicates '(3 4 5 1 3 4)) => '(5 1 3 4))
 (test (remove-duplicates '(1)) => '(1))
-;; My tests 
+;; My tests
+
 (test (remove-duplicates '(6 3 2 3 5 6 6)) => '(3 2 5 6 ))
 (test (remove-duplicates '(3 4 5 1 3 4)) => '(5 1 3 4))
 (test (remove-duplicates '(1)) => '(1))
@@ -70,10 +72,18 @@
 (test (remove-duplicates '(6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6)) => '(6))
 
 
-  
+  ;; This function recive a SET , sort it , and remove all duplicates , returns an ordered set , with no duplicates
   (: create-sorted-set : SET -> SET)
   (define (create-sorted-set l)
-    (<-- fill in --> (sort l <)))
+    (remove-duplicates (sort l <))) ;; I just remove duplicates from the sorted set , it allways stays sorted (assume X < Y and our sorted set is ... X X X ...Y Y Y Y .... , only the most right members will stay so it become ...X Y ....)
+
+;; My tests
+
+(test (create-sorted-set '(3 4 3 4 3 4 4 3)) => '(3 4))
+(test (create-sorted-set '(3 4 5 3)) => '(3 4 5))
+(test (create-sorted-set '(3 2 3 5 6)) => '(2 3 5 6))
+(test (create-sorted-set '()) => '())
+
   
   (: set-union : SET SET -> SET)
   (define (set-union A B)
