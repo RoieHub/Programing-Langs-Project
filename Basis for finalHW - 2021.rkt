@@ -50,11 +50,25 @@
   (test (ismember? 1 '(3 4 5 1 3 4)))
   (test (ismember? 1 '(1)))
 
+  ;; This function is very easy , I remeber it 
   (: remove-duplicates : SET  -> SET)
   (define (remove-duplicates l)
     (cond [(or (null? l) (null? (rest l))) l]
-          [<-- fill in -->]
+          [(ismember? (first l) (rest l)) (remove-duplicates (rest l))];; If the current (first) item in the list , is a duplicate , recursivly send the rest of the set to this function until its done.
           [else (cons (first l) (remove-duplicates (rest l)))]))
+
+;;Given tests
+(test (remove-duplicates '(3 4 5)) => '(3 4 5))
+(test (remove-duplicates '( 3 2 3 5 6)) => '(2 3 5 6))
+(test (remove-duplicates '(3 4 5 1 3 4)) => '(5 1 3 4))
+(test (remove-duplicates '(1)) => '(1))
+;; My tests 
+(test (remove-duplicates '(6 3 2 3 5 6 6)) => '(3 2 5 6 ))
+(test (remove-duplicates '(3 4 5 1 3 4)) => '(5 1 3 4))
+(test (remove-duplicates '(1)) => '(1))
+(test (remove-duplicates '()) => '())
+(test (remove-duplicates '(6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6)) => '(6))
+
 
   
   (: create-sorted-set : SET -> SET)
