@@ -75,7 +75,7 @@
   ;; This function recive a SET , sort it , and remove all duplicates , returns an ordered set , with no duplicates
   (: create-sorted-set : SET -> SET)
   (define (create-sorted-set l)
-    (remove-duplicates (sort l <))) ;; I just remove duplicates from the sorted set , it allways stays sorted (assume X < Y and our sorted set is ... X X X ...Y Y Y Y .... , only the most right members will stay so it become ...X Y ....)
+    (remove-duplicates (sort l <))) ;; I just use the previosly created function which revcives a sorted set , after removing duplicates , it allways stays sorted (assume X < Y and our sorted set is ... X X X ...Y Y Y Y .... , only the most right members will stay so it become ...X Y ....)
 
 ;; My tests
 
@@ -84,17 +84,31 @@
 (test (create-sorted-set '(3 2 3 5 6)) => '(2 3 5 6))
 (test (create-sorted-set '()) => '())
 
-  
+  ;; This function recives two sets A and B , and returnes the one sorted SET where its member are from A or B . (WIKI ->  mathematical sets union) 
   (: set-union : SET SET -> SET)
   (define (set-union A B)
-    ( <-- fill in -->))
+   (create-sorted-set (append A B))) ;; Again we Use the previous made function , we just need to append the sets , and the returned set is sorted and have no diplicates.
 
+;; My tests
+
+(test (set-union '(3 4 5) '(3 4 5)) => '(3 4 5))
+(test (set-union '(3 4 5) '()) => '(3 4 5))
+(test (set-union '(3 4 5) '(1)) => '(1 3 4 5))
+
+   ;; This function recive two sets A and B , returns a set which members are both in A and B.
   (: set-intersection : SET SET -> SET)
   (define (set-intersection A B)
     (: mem-filter : Number -> Boolean)
     (define (mem-filter n)
       (ismember? n A))
-    (filter <-- fill in -->))
+    (filter mem-filter (create-sorted-set B)));; To solve it I needed to check again how fitler works and it returns list of members who pass the boolean check , it was simple since mem-filter is a boolean check, allways checks if n is in A , so our filter will ask each member of B if it is in A , if true , keep the member , else its delete by filter. 
+
+;;My tests
+
+(test (set-intersection '(3 4 5) '(3 4 5)) => '(3 4 5))
+(test (set-intersection '(3 4 5) '(3)) => '(3))
+(test (set-intersection '(3 4 5) '(1)) => '())
+
   
 
 
