@@ -120,25 +120,25 @@
   ;; to convert s-expressions into SOLs
   (define (parse-sexpr sexpr)
     (match sexpr
-      [(list (number: ns) ...) (<-- fill in --> )] ;; sort and remove-duplicates
+      [(list (number: ns) ...) (Set (create-sorted-set ns))] ;; sort and remove-duplicates [if its a list of nums , create a sorted set ]
       [(symbol: name) (Id name)]
       [(cons 'with more)
        (match sexpr
          [(list 'with (list (symbol: name) named) body)
-          <-- fill in -->] ;;; there is no With constructor replace with existing constructors
+         (CallS (Fun name1 name2 (parse-sexpr body)) (parse-sexpr named1) (parse-sexpr named2))] ;;; there is no With constructor replace with existing constructors [Done just as we did it in class]
          [else (error 'parse-sexpr "bad `with' syntax in ~s" sexpr)])]
       [(cons 'fun more)
        (match sexpr
          [(list 'fun (list (symbol: name1) (symbol: name2)) body)
           (if (eq? name1 name2)
-              (error <-- fill in -->) ;; cannot use the same param name twice
+              (error 'parse-sexpr "`fun' has a duplicate param name in ~s" sexpr) ;; cannot use the same param name twice [Easy to solve, just fitted to the tests below]
               (Fun name1 name2 (parse-sexpr body)))]
          [else (error 'parse-sexpr "bad `fun' syntax in ~s" sexpr)])]
       [(list 'scalar-mult (number: sc) rhs) (Smult sc (parse-sexpr rhs))]
       [(list 'intersect lhs rhs) (Inter (parse-sexpr lhs) (parse-sexpr rhs))]
       [(list 'union lhs rhs) (Union (parse-sexpr lhs) (parse-sexpr rhs))]
-      [(list 'call-static fun arg1 arg2) <-- fill in -->]
-      [<-- fill in -->]
+      [(list 'call-static fun arg1 arg2)(CallS (parse-sexpr fun) (parse-sexpr arg1) (parse-sexpr arg2))]
+      [(list 'call-dynamic fun arg1 arg2) (CallD (parse-sexpr fun) (parse-sexpr arg1) (parse-sexpr arg2))] ;; Obviosly the dynamic call was missing, so I added it just like in class.
       [else (error 'parse-sexpr "bad syntax in ~s" sexpr)]))
 
     
