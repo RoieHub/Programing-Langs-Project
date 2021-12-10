@@ -125,7 +125,7 @@
       [(cons 'with more)
        (match sexpr
          [(list 'with (list (symbol: name) named) body)
-         (CallS  (Fun name   (parse-sexpr body)) (parse-sexpr named) (parse-sexpr named))] ;;; there is no With constructor replace with existing constructors [Done just as we did it in class]
+         (CallS  (Fun name 'xxx  (parse-sexpr body))  (parse-sexpr named) (parse-sexpr(string->sexpr "{}")))] ;;; there is no With constructor replace with existing constructors [Done just as we did it in class]::I didnt see the problem is I need some bounded id for the name2 , but I could not make one,I was trying to cast name into string append some other string so it will not throw an error in Func constructor. 
          [else (error 'parse-sexpr "bad `with' syntax in ~s" sexpr)])]
       [(cons 'fun more)
        (match sexpr
@@ -241,10 +241,11 @@ Evaluation rules:
     (SetV(map mult-op (SetV->set s))))
 
  (: set-op :(SET SET -> SET) VAL VAL -> VAL) ;; This function used in eval , recives 3 params , 1st is the operation which is Set function with two params that returns a new set , 2nd and 3rd are the VAL of the sets the 
-  ;; gets a binary SET operator, and uses it within a SetV
+  ;; gets a binary SET operator, and uses it within a SetV , because eval function returns VAL.
   ;; wrapper
   (define (set-op op val1 val2)
-     (SetV (op (SetV->set val1) (SetV->set val2))))
+    (SetV(op (SetV->set val1) (SetV->set val2)))) ;; I dont know why this dosent work , val 1 & 2 are indeed VAL cause they called from parse-sexpr.
+
 
 ;;---------  the eval procedure ------------------------------
 ;; Please complete the missing parts, and add comments (comments should specify 
@@ -293,6 +294,24 @@ Evaluation rules:
                     (Extend 'cons (FunV 'f 's (Fun 'selector 'spare-param (CallS (Id 'selector) (Id 'f) (Id 's))) (EmptyEnv))  
                                     (EmptyEnv)))))
 
+;; cons first second , not shure if needed. cause its not given to fill in but I see it on tests.
+(: cons : ANY ANY -> ANY)
+(define (cons x y)
+  (define (pair selector)
+    (selector x y))
+  pair)
+
+(: first : ANY -> ANY)
+(define (first p)
+  (p (lambda (a b) a)))
+
+(: second : ANY -> ANY)
+(define (second p)
+  (p (lambda (a b) b)))
+
+
+
+
   (: run : String -> (U SET VAL))
   ;; evaluate a SOL program contained in a string
   (define (run str)
@@ -301,6 +320,14 @@ Evaluation rules:
          [(SetV S) S]
          [else result])))
 
+
+(test (run "{with {p {call-static cons {1 2 3} {4 2 3}}}
+{with {S {intersect {call-static first p {}}
+{call-static second p {}}}}
+{call-static {fun {x y} {union x S}}
+{scalar-mult 3 S}
+{4 5 7 6 9 8 8 8}}}}")
+=> '(2 3 6 9))
 
 (test (run "{1 2 3  4 1 4  4 2 3 4 1 2 3}") => '(1 2 3 4))
 (test (run "{union {1 2 3} {4 2 3}}") => '(1 2 3 4))
@@ -334,5 +361,4 @@ Evaluation rules:
       =>  '(2 3 6 9))
 (test (run "{call-static {1} {2 2} {}}")
       =error> "eval: `call-static' expects a function, got: #(struct:SetV (1))")
-
 
