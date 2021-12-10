@@ -125,7 +125,7 @@
       [(cons 'with more)
        (match sexpr
          [(list 'with (list (symbol: name) named) body)
-         (CallS (Fun name1 name2 (parse-sexpr body)) (parse-sexpr named1) (parse-sexpr named2))] ;;; there is no With constructor replace with existing constructors [Done just as we did it in class]
+         (CallS  (Fun name   (parse-sexpr body)) (parse-sexpr named) (parse-sexpr named))] ;;; there is no With constructor replace with existing constructors [Done just as we did it in class]
          [else (error 'parse-sexpr "bad `with' syntax in ~s" sexpr)])]
       [(cons 'fun more)
        (match sexpr
@@ -195,11 +195,11 @@ Evaluation rules:
     eval({with {x E1} E2},env) = eval(E2,extend(x,eval(E1,env),env))
     eval({fun {x1 x2} E},env)  = <{fun {x1 x2} E}, env>
     eval({call-static E-op E1 E2},env)
-             = eval(Ef,extend(x2,eval(E2,env) ... <-- fill in --> )
+             = eval(Ef,extend(x2,eval(E2,env),extend(x1,eval(E1,env),envf));; This is the difference between static and dynamic - calling extends env or envF
                                if eval(E-op,env) = <{fun {x1 x2} Ef}, envf>
              = error!          otherwise
     eval({call-dynamic E-op E1 E2},env)
-             = <-- fill in -->
+             = = eval(Ef,extend(x2,eval(E2,env),extend(x1,eval(E1,env),env)) ;; So here I extend the given env. 
                                if eval(E-op,env) = <{fun {x1 x2} Ef}, envf>
              = error!          otherwise
 
@@ -238,9 +238,9 @@ Evaluation rules:
     (: mult-op : Number -> Number)
     (define (mult-op k)
       (* k n))
-    (<-- fill in --> (map <-- fill in -->)))
+    (SetV(map mult-op (SetV->set s))))
 
- (: set-op : <-- fill in --> )
+ (: set-op :(SET SET -> SET) VAL VAL -> VAL) ;; This function used in eval , recives 3 params , 1st is the operation which is Set function with two params that returns a new set , 2nd and 3rd are the VAL of the sets the 
   ;; gets a binary SET operator, and uses it within a SetV
   ;; wrapper
   (define (set-op op val1 val2)
@@ -253,10 +253,16 @@ Evaluation rules:
   ;; evaluates SOL expressions by reducing them to set values
   (define (eval expr env)
     (cases expr
-      [(Set S) <-- fill in -->]
-      [(Smult n set) (smult-set <-- fill in -->)]
-      [(Inter l r) (set-op set-intersection <-- fill in -->)]
-      [(Union l r) <-- fill in -->]
+      [(Set S) (SetV S)] ;; If s is Set , create SetV.
+      [(Smult n set) (smult-set n (SetV (SetV->set (eval set env))))]
+      [(Inter l r) (set-op set-intersection
+                           (eval l env)
+                           (eval r env)
+                           )] ;; Checking how set intersection works ,  what params it gets helped us to make this answere.
+      [(Union l r) (set-op set-union
+                           (eval l env)
+                           (eval r env)
+                           )] ;; This is copy->paste from Inter.
       [(Id name) (lookup name env)]
       [(Fun bound-id1 bound-id2 bound-body)
        (FunV bound-id1 bound-id2 bound-body env)]
@@ -264,30 +270,36 @@ Evaluation rules:
        (let ([fval (eval fun-expr env)])
          (cases fval
            [(FunV bound-id1 bound-id2 bound-body f-env)
-            <-- fill in -->]
+           (eval bound-body
+                (Extend bound-id2 (eval arg-expr2 env) (Extend bound-id1 (eval arg-expr1 env) f-env)) ;; Just working with the parser rules.
+                )]
            [else (error 'eval "`call-static' expects a function, got: ~s"
                               fval)]))]
       [(CallD fun-expr arg-expr1 arg-expr2)
        (let ([fval (eval fun-expr env)])
          (cases fval
-           [<-- fill in -->]
+           [(FunV bound-id1 bound-id2 bound-body f-env)
+          (eval bound-body
+                (Extend bound-id2 (eval arg-expr2 env) (Extend bound-id1 (eval arg-expr1 env) f-env)) ;; Just working with the parsing rules.
+                )]
            [else (error 'eval "`call-dynamic' expects a function, got: ~s"
                               fval)]))]))
 
+   ;; This function creates the global inveroment , and allready comes with defined nemas second , first and cons.
   (: createGlobalEnv : -> ENV)
   (define (createGlobalEnv)
-    (Extend 'second <-- fill in -->
-            (Extend <-- fill in -->
-                    (Extend <-- fill in --> 
+    (Extend 'second (FunV 'f 's (Id 's) (EmptyEnv)) ;; We did this in class. copyPasta.
+            (Extend 'first (FunV 'f 's (Id 'f) (EmptyEnv)) 
+                    (Extend 'cons (FunV 'f 's (Fun 'selector 'spare-param (CallS (Id 'selector) (Id 'f) (Id 's))) (EmptyEnv))  
                                     (EmptyEnv)))))
 
   (: run : String -> (U SET VAL))
   ;; evaluate a SOL program contained in a string
   (define (run str)
-    (let ([result (eval (parse str) <-- fill in -->)])
+    (let ([result (eval (parse str) (createGlobalEnv))])
        (cases result
-         [(SetV S) <-- fill in -->]
-         [else <-- fill in -->])))
+         [(SetV S) S]
+         [else result])))
 
 
 (test (run "{1 2 3  4 1 4  4 2 3 4 1 2 3}") => '(1 2 3 4))
